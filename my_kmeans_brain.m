@@ -1,5 +1,5 @@
 %% Implement the k-means algorithm to cluster the SAR matrices in the whole brain
-function [SAR_cluster, CENTS] = my_kmeans_brain(matrix_Q, similiarity_nan, core_idx, numCluster, maxiters)
+function [SAR_cluster, CENTS] = my_kmeans_brain(matrix_Q, similiarity_nan, sizeX, sizeY, core_idx, numCluster, maxiters)
 
 % USAGE:
 % [SAR_cluster, CENTS] = my_kmeans(matrix_Q_10g, similiarity_nan, core_idx, numCluster, maxiters)
@@ -77,7 +77,7 @@ end
 
 SAR_cluster = CurrentLabel;
 % re-organize the segmentation results
-SAR_cluster = reshape(SAR_cluster, numS, dim, dim);
+SAR_cluster = reshape(SAR_cluster, numS, sizeX, sizeY);
 end
 
 %% Find if there exists Q+Z-B is psd

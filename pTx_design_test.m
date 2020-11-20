@@ -90,7 +90,7 @@ for k = 1: numCluster
     for ii = 1: size(idx_k, 1)
         % printf('%d / %d', ii, size(idx_k, 1));
         currentQ = matrix_Q_10g(:,:,slice, idx_k(ii));
-        Z_tmp = FindPSD(currentQ, matR_core(:,:,k), Nc);
+        Z_tmp = FindPSD(currentQ, matR_core(:,:,k), matrix_Z(:,:,k),Nc);
         if norm(Z_tmp) > Overestimation(k)
             matrix_Z(:,:,k) = Z_tmp;
             Overestimation(k) = norm(Z_tmp);

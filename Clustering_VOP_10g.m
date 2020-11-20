@@ -1,4 +1,4 @@
-function [ SAR_cluster, numCluster, matrix_Q_10g_VOP, core_idx ] = Clustering_VOP_10g( matrix_Q_10g, similiarity, slice, sizeX, sizeY, overestimate )
+function [ SAR_cluster, numCluster, matrix_Q_10g_VOP, core_idx ] = Clustering_VOP_10g_new( matrix_Q_10g, similiarity, slice, sizeX, sizeY, overestimate )
 
 % VOP Clustering Algorithm 
 % num = number of pre-defined clusters
@@ -23,7 +23,7 @@ core_idx = idxMaxtoMin(1);
 SAR_cluster(core_idx) = numCluster;
 matrix_Z = zeros(Nc, Nc, sizeX*sizeY);
 for k = 2: sizeX*sizeY
-    % printf('%d / %d', k, sizeX*sizeY);
+    printf('%d / %d', k, sizeX*sizeY);
     idx_k = idxMaxtoMin(k);
     currentQ = matrix_Q_10g(:,:,slice,idx_k);
     if (isequal(currentQ, zeros(Nc, Nc)))
@@ -35,13 +35,13 @@ for k = 2: sizeX*sizeY
     for ii = 1: numCluster
         c_idx = core_idx(ii);
         core = matrix_Q_10g(:,:,slice,c_idx);
-        [ Z, exitflag ] = FindPSD(currentQ, core, epsilon, Nc);
+        [ Z, exitflag ] = FindPSD(currentQ, core, matrix_Z(:,:,ii), epsilon, Nc);
         if (exitflag == 1)
-            if (norm(Z) >= norm(matrix_Z(:,:,ii)))
+           if (norm(Z) >= norm(matrix_Z(:,:,ii)))
                 matrix_Z(:,:,ii) = Z;
-            end
-            SAR_cluster(idx_k) = ii;
-            break;
+           end
+           SAR_cluster(idx_k) = ii;
+           break;
         end
     end
     if (SAR_cluster(idx_k) == 0)
@@ -49,7 +49,7 @@ for k = 2: sizeX*sizeY
         SAR_cluster(idx_k) = numCluster;
         core_idx = [core_idx; idx_k];
     end
-    % printf('Current clusters: %d', numCluster);
+    printf('Current clusters: %d', numCluster);
 end
 
 %% Determine the resulting VOPs
@@ -61,20 +61,22 @@ end
 end
 
 %% Find if there exists ||Z|| <= epsilon that Q+Z-B is psd
-function [ Z, exitflag ] = FindPSD(B_current, B_core, epsilon, Nc)
+function [ Z, exitflag ] = FindPSD(B_current, B_core, currentZ, epsilon, Nc)
     % disp 'Finding the PSD matrix Z';
     Z = zeros(Nc, Nc);
     maxInters = 300;
     exitflag = 0;
+    B_core = B_core + currentZ;
     for ii = 1: maxInters
         % printf('%d / %d', ii, maxInters);
         alleigs = eig(B_core+Z-B_current);
-        alleigs = [alleigs; epsilon-norm(Z)];
-        if (epsilon-norm(Z) < 0)
+        alleigs = [alleigs; epsilon-norm(currentZ+Z)];
+        if (epsilon-norm(currentZ+Z) < 0)
             break;
         end
         % if (all(alleigs >=0) || all(-real(alleigs(alleigs<0)) <= 1e-10) )
         if (all(alleigs >=0))
+            Z = currentZ+Z;
             exitflag = 1;
             break;
         else

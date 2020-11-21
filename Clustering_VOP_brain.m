@@ -28,7 +28,7 @@ for k = 2: sizeX*sizeY*numS
     for ii = 1: numCluster
         c_idx = core_idx(ii, :);
         core = matrix_Q_10g(:,:,c_idx(2),c_idx(1));
-        [ Z, exitflag ] = FindPSD(currentQ, core, epsilon, Nc);
+        [ Z, exitflag ] = FindPSD(currentQ, core, matrix_Z(:,:,ii), epsilon, Nc);
         if (exitflag == 1)
             if (norm(Z) >= norm(matrix_Z(:,:,ii)))
                 matrix_Z(:,:,ii) = Z;
@@ -57,20 +57,22 @@ end
 end
 
 %% Find if there exists ||Z|| <= epsilon that Q+Z-B is psd
-function [ Z, exitflag ] = FindPSD(B_current, B_core, epsilon, Nc)
+function [ Z, exitflag ] = FindPSD(B_current, B_core, currentZ, epsilon, Nc)
     % disp 'Finding the PSD matrix Z';
     Z = zeros(Nc, Nc);
     maxInters = 300;
     exitflag = 0;
+    B_core = B_core + currentZ;
     for ii = 1: maxInters
         % printf('%d / %d', ii, maxInters);
         alleigs = eig(B_core+Z-B_current);
-        alleigs = [alleigs; epsilon-norm(Z)];
-        if (epsilon-norm(Z) < 0)
+        alleigs = [alleigs; epsilon-norm(currentZ+Z)];
+        if (epsilon-norm(currentZ+Z) < 0)
             break;
         end
         % if (all(alleigs >=0) || all(-real(alleigs(alleigs<0)) <= 1e-10) )
         if (all(alleigs >=0))
+            Z = currentZ+Z;
             exitflag = 1;
             break;
         else

@@ -79,26 +79,37 @@ maxiters = 200;
 [ SAR_cluster_kmeans, CENTS ] = my_kmeans(squeeze(matrix_Q_10g(:,:,slice,:)), similiarity_nan(:,slice), core_idx, numCluster, maxiters);
 SAR_cluster_kmeans = reshape(SAR_cluster_kmeans, dim, dim);
 
+% compute the VOP overestimation
+matR_core = zeros(Nc, Nc, numCluster);
+Overestimation = zeros(1, numCluster);
+for k = 1: numCluster 
+    % printf('%d / %d', k, numCluster);
+    idx_k = find(SAR_cluster_VOP==k);
+    matR_core(:,:,k) = matrix_Q_10g(:,:,slice,core_idx(k));
+    Overestimation(k) = norm(matrix_VOP(:,:,k) - matR_core(:,:,k));
+end
+max(Overestimation) / max(similiarity(:, slice))
+
+% compute the k-means overestimation
 matR_core = zeros(Nc, Nc, numCluster);
 matrix_Z = zeros(Nc, Nc, numCluster);
 Overestimation = zeros(1, numCluster);
-OverestimationData = nan(sizeX*sizeY, numCluster);
 for k = 1: numCluster
     % printf('%d / %d', k, numCluster);
     idx_k = find(SAR_cluster_kmeans==k);
     matR_core(:,:,k) = CENTS(:,:,k);
-    for ii = 1: size(idx_k, 1)
+    [~, idxMaxtoMin] = sort(similiarity_nan(idx_k, slice), 'descend');
+    for kk = 1: size(idx_k, 1)
         % printf('%d / %d', ii, size(idx_k, 1));
-        currentQ = matrix_Q_10g(:,:,slice, idx_k(ii));
+        currentQ = matrix_Q_10g(:,:,slice, idx_k(idxMaxtoMin(kk)));
         Z_tmp = FindPSD(currentQ, matR_core(:,:,k), matrix_Z(:,:,k), Nc);
         if norm(Z_tmp) > Overestimation(k)
             matrix_Z(:,:,k) = Z_tmp;
             Overestimation(k) = norm(Z_tmp);
         end
-        OverestimationData(ii, k) = norm(Z_tmp) ./ max(similiarity_nan(:, slice)); 
     end
 end
-Overestimation = Overestimation ./ max(similiarity_nan(:, slice));
+max(Overestimation) / max(similiarity(:, slice))
 
 % Determine the resulting k-means clusters
 matrix_kmeans = zeros(Nc, Nc, numCluster);

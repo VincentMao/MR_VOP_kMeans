@@ -37,7 +37,7 @@ for k = 2: sizeX*sizeY
         core = matrix_Q_10g(:,:,slice,c_idx);
         [ Z, exitflag ] = FindPSD(currentQ, core, matrix_Z(:,:,ii), epsilon, Nc);
         if (exitflag == 1)
-           if (norm(Z) >= norm(matrix_Z(:,:,ii)))
+           if (norm(Z) >= norm(matrix_Z(:,:,ii))) % could replace with Z=matrix_Z(:,:,ii);
                 matrix_Z(:,:,ii) = Z;
            end
            SAR_cluster(idx_k) = ii;

@@ -73,7 +73,8 @@ sizeY = dim;
 slice = 79; % choose the slice you wish to proceed
 load('./Data/similiarity_nan.mat');
 load('./Data/similiarity.mat');
-overestimate = 0.05 * max(similiarity_nan(:, slice));
+epsilon = 0.05;
+overestimate = epsilon * max(similiarity_nan(:, slice));
 maxiters = 200;
 [ SAR_cluster_VOP, numCluster, matrix_VOP, core_idx ] = Clustering_VOP_10g( matrix_Q_10g, similiarity, slice, sizeX, sizeY, overestimate );
 [ SAR_cluster_kmeans, CENTS ] = my_kmeans(squeeze(matrix_Q_10g(:,:,slice,:)), similiarity_nan(:,slice), core_idx, numCluster, maxiters);

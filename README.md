@@ -3,4 +3,4 @@ The source code and example dataset for MRI virtual observation points and k-mea
 
 
 
-The 10-g Q matrix is too large for uploading, so we omitted for now. Can provide off-line.
+The 10-g Q matrix now available in the shared link.
